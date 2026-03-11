@@ -1,0 +1,10 @@
+# Node modules
+node_modules/
+
+# Build outputs
+/frontend/web/build
+/frontend/mobile/android/app/build
+/frontend/mobile/ios/build
+
+# Environment variables
+.env
