@@ -1,29 +1,69 @@
 import React, { useState, useEffect } from "react";
-import WorkerForm from "./WorkerForm";
-import WorkersList from "./WorkersList";
+import Login from "./Login";
+import Register from "./Register";
+import Dashboard from "./Dashboard";
+import ProtectedRoute from "./ProtectedRoute";
 
 function App() {
-  const [workers, setWorkers] = useState([]);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState("login");
 
-  // Cargar trabajadores al iniciar
+  // Verificar si hay sesión guardada al cargar
   useEffect(() => {
-    fetch("http://localhost:5000/workers")
-      .then((res) => res.json())
-      .then((data) => setWorkers(data))
-      .catch((err) => console.error("Error al cargar trabajadores:", err));
+    const savedToken = localStorage.getItem("token");
+    const savedUser = localStorage.getItem("user");
+
+    if (savedToken && savedUser) {
+      setUser(JSON.parse(savedUser));
+      setCurrentPage("dashboard");
+    }
+
+    setLoading(false);
   }, []);
 
-  // Actualizar lista cuando se agrega uno nuevo
-  const handleWorkerAdded = (newWorker) => {
-    setWorkers((prev) => [...prev, newWorker]);
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    setCurrentPage("dashboard");
   };
 
+  const handleRegisterSuccess = (userData) => {
+    setUser(userData);
+    setCurrentPage("dashboard");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setCurrentPage("login");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1>DomestiApp</h1>
-      <WorkerForm onWorkerAdded={handleWorkerAdded} />
-      <WorkersList workers={workers} />
-    </div>
+    <>
+      {!user ? (
+        <>
+          {currentPage === "login" && <Login onLoginSuccess={handleLoginSuccess} />}
+          {currentPage === "register" && (
+            <Register onRegisterSuccess={handleRegisterSuccess} />
+          )}
+        </>
+      ) : (
+        <ProtectedRoute isAuthenticated={!!user}>
+          <Dashboard user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      )}
+    </>
   );
 }
 
