@@ -13,6 +13,7 @@ export const createServiceRequestSchema = Joi.object({
     "string.empty": "La ubicación es obligatoria",
     "string.min": "La ubicación debe tener al menos 5 caracteres",
   }),
+  fotos: Joi.array().items(Joi.string()).optional(),
   presupuestoOferido: Joi.number().positive().optional().messages({
     "number.positive": "El presupuesto debe ser un número positivo",
   }),

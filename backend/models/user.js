@@ -8,6 +8,9 @@ export default class User {
     this.email = data.email;
     this.password = data.password; // encriptada con bcrypt
     this.rol = data.rol || "cliente"; // "cliente", "profesional", "admin"
+    this.ubicacion = data.ubicacion || null; // dirección / barrio
+    this.telefono = data.telefono || null;
+    this.metodosPago = data.metodosPago || []; // ej. [{ tipo: 'mercadopago', alias: '...' }]
     this.creadoEn = data.creadoEn || new Date().toISOString();
   }
 

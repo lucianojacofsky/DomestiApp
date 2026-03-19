@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { db } from "../server.js";
 import User from "../models/user.js";
-import { validateRegister, validateLogin } from "../validators/userValidator.js";
+import { validateRegister, validateLogin, validateProfileUpdate } from "../validators/userValidator.js";
 
 const SECRET = process.env.JWT_SECRET || "claveSuperSecreta";
 
@@ -105,5 +105,35 @@ export const getProfile = async (req, res) => {
     res.json(user.toJSON());
   } catch (err) {
     res.status(500).json({ error: "Error al obtener perfil", details: err.message });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { error, value } = validateProfileUpdate(req.body);
+
+    if (error) {
+      const messages = error.details.map((d) => d.message);
+      return res.status(400).json({ error: "Validación fallida", messages });
+    }
+
+    await db.read();
+    const userIndex = db.data.users.findIndex((u) => u.id === req.user.id);
+
+    if (userIndex === -1) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const user = db.data.users[userIndex];
+    db.data.users[userIndex] = {
+      ...user,
+      ...value,
+    };
+
+    await db.write();
+
+    res.json(db.data.users[userIndex]);
+  } catch (err) {
+    res.status(500).json({ error: "Error al actualizar perfil", details: err.message });
   }
 };

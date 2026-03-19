@@ -5,6 +5,8 @@ import RequestService from "./RequestService";
 import ServicesList from "./ServicesList";
 import TransactionsList from "./TransactionsList";
 import Chat from "./Chat.js";
+import ProfessionalProfile from "./ProfessionalProfile";
+import UserProfile from "./UserProfile";
 
 function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState("servicios");
@@ -70,6 +72,16 @@ function Dashboard({ user, onLogout }) {
             >
               Transacciones
             </button>
+            <button
+              onClick={() => setActiveTab("perfil")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "perfil"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              Perfil
+            </button>
             {user?.rol === "profesional" && (
               <button
                 onClick={() => setActiveTab("trabajadores")}
@@ -97,6 +109,16 @@ function Dashboard({ user, onLogout }) {
 
           {activeTab === "transacciones" && (
             <TransactionsList user={user} />
+          )}
+
+          {activeTab === "perfil" && (
+            <div className="space-y-8">
+              {user?.rol === "profesional" ? (
+                <ProfessionalProfile />
+              ) : (
+                <UserProfile />
+              )}
+            </div>
           )}
 
           {activeTab === "trabajadores" && user?.rol === "profesional" && (

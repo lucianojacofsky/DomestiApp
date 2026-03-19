@@ -9,6 +9,7 @@ export default class ServiceRequest {
     this.tipoServicio = data.tipoServicio; // "plomería", "electricidad", etc.
     this.descripcion = data.descripcion;
     this.ubicacion = data.ubicacion;
+    this.fotos = data.fotos || []; // array de URLs/base64
     this.presupuestoOferido = data.presupuestoOferido || null;
     this.estado = data.estado || "pendiente"; // pendiente | aceptado | en_progreso | completado | cancelado
     this.fechaSolicitud = data.fechaSolicitud || new Date().toISOString();
@@ -25,6 +26,7 @@ export default class ServiceRequest {
       tipoServicio: this.tipoServicio,
       descripcion: this.descripcion,
       ubicacion: this.ubicacion,
+      fotos: this.fotos,
       presupuestoOferido: this.presupuestoOferido,
       estado: this.estado,
       fechaSolicitud: this.fechaSolicitud,

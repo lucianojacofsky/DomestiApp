@@ -6,6 +6,7 @@ function RequestService({ onRequestCreated }) {
     tipoServicio: "",
     descripcion: "",
     ubicacion: "",
+    fotos: [],
     presupuestoOferido: "",
     fechaCompromiso: "",
   });
@@ -16,6 +17,21 @@ function RequestService({ onRequestCreated }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    const base64Files = await Promise.all(
+      files.map((file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        })
+      )
+    );
+    setFormData((prev) => ({ ...prev, fotos: base64Files }));
   };
 
   const handleSubmit = async (e) => {
@@ -50,6 +66,7 @@ function RequestService({ onRequestCreated }) {
         tipoServicio: "",
         descripcion: "",
         ubicacion: "",
+        fotos: [],
         presupuestoOferido: "",
         fechaCompromiso: "",
       });
@@ -125,6 +142,32 @@ function RequestService({ onRequestCreated }) {
             required
             disabled={loading}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Fotos del problema (opcional)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFiles}
+            className="w-full"
+            disabled={loading}
+          />
+          {formData.fotos.length > 0 && (
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {formData.fotos.map((src, idx) => (
+                <img
+                  key={idx}
+                  src={src}
+                  alt={`Foto ${idx + 1}`}
+                  className="h-20 w-full object-cover rounded"
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

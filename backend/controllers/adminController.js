@@ -24,6 +24,39 @@ export const listarTransacciones = async (req, res) => {
   res.json(db.data.transactions);
 };
 
+// Listar payouts por profesional (comisión)
+export const listarPayouts = async (req, res) => {
+  await db.read();
+
+  // Solo transacciones aprobadas
+  const pagos = db.data.transactions.filter((t) => t.estado === "aprobada");
+
+  const resumen = {};
+
+  pagos.forEach((t) => {
+    if (!resumen[t.profesionalId]) {
+      const profesional = db.data.users.find((u) => u.id === t.profesionalId);
+      resumen[t.profesionalId] = {
+        profesionalId: t.profesionalId,
+        nombre: profesional?.nombre || "-",
+        email: profesional?.email || "-",
+        totalCobrado: 0,
+        totalComision: 0,
+        totalNeto: 0,
+        transacciones: 0,
+      };
+    }
+
+    resumen[t.profesionalId].totalCobrado += t.montoTotal;
+    const comision = t.montoComision || t.montoTotal * 0.1;
+    resumen[t.profesionalId].totalComision += comision;
+    resumen[t.profesionalId].totalNeto += t.montoTotal - comision;
+    resumen[t.profesionalId].transacciones += 1;
+  });
+
+  res.json(Object.values(resumen));
+};
+
 // Resolver disputa (ejemplo simple)
 export const resolverDisputa = async (req, res) => {
   const { servicioId, estado } = req.body;

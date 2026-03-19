@@ -46,6 +46,30 @@ export const validateRegister = (data) => {
   return registerSchema.validate(data, { abortEarly: false });
 };
 
+export const validateProfileUpdate = (data) => {
+  const schema = Joi.object({
+    nombre: Joi.string().min(3).max(100).optional().messages({
+      "string.min": "El nombre debe tener al menos 3 caracteres",
+      "string.max": "El nombre no puede exceder 100 caracteres",
+    }),
+    ubicacion: Joi.string().min(3).max(150).optional().messages({
+      "string.min": "La ubicación debe tener al menos 3 caracteres",
+      "string.max": "La ubicación no puede exceder 150 caracteres",
+    }),
+    telefono: Joi.string().pattern(/^[0-9]{6,}$/).optional().messages({
+      "string.pattern.base": "El teléfono debe contener solo números y al menos 6 dígitos",
+    }),
+    metodosPago: Joi.array().items(
+      Joi.object({
+        tipo: Joi.string().valid("mercadopago", "efectivo", "transferencia").required(),
+        alias: Joi.string().required(),
+      })
+    ).optional(),
+  });
+
+  return schema.validate(data, { abortEarly: false });
+};
+
 export const validateLogin = (data) => {
   return loginSchema.validate(data, { abortEarly: false });
 };
