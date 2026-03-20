@@ -3,7 +3,8 @@ import { db } from "../server.js";
 // Listar todos los usuarios
 export const listarUsuarios = async (req, res) => {
   await db.read();
-  res.json(db.data.users);
+  const users = (db.data.users || []).map(({ password, ...safeUser }) => safeUser);
+  res.json(users);
 };
 
 // Cambiar rol de un usuario
@@ -22,6 +23,35 @@ export const cambiarRol = async (req, res) => {
 export const listarTransacciones = async (req, res) => {
   await db.read();
   res.json(db.data.transactions);
+};
+
+// Listar workers para gestión admin
+export const listarWorkersAdmin = async (req, res) => {
+  await db.read();
+  res.json(db.data.workers || []);
+};
+
+// Listar solicitudes para gestión admin
+export const listarSolicitudesAdmin = async (req, res) => {
+  await db.read();
+  res.json(db.data.serviceRequests || []);
+};
+
+// Cambiar estado de solicitud como admin
+export const actualizarEstadoSolicitudAdmin = async (req, res) => {
+  const { servicioId, estado } = req.body;
+  await db.read();
+  const servicio = db.data.serviceRequests.find((s) => s.id === servicioId);
+  if (!servicio) return res.status(404).json({ error: "Servicio no encontrado" });
+
+  const allowed = ["pendiente", "aceptado", "en_progreso", "completado", "cancelado"];
+  if (!allowed.includes(estado)) {
+    return res.status(400).json({ error: "Estado inválido" });
+  }
+
+  servicio.estado = estado;
+  await db.write();
+  res.json({ message: "Estado actualizado", servicio });
 };
 
 // Listar payouts por profesional (comisión)

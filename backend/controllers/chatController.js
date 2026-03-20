@@ -1,6 +1,15 @@
 import { db } from "../server.js";
 import Message from "../models/message.js";
 
+const canUseServiceChat = (service, userId) => {
+  if (!service) return false;
+  const isAssigned = Boolean(service.profesionalId);
+  if (!isAssigned) return false;
+  const allowedStates = ["aceptado", "en_progreso", "completado"];
+  if (!allowedStates.includes(service.estado)) return false;
+  return service.clienteId === userId || service.profesionalId === userId;
+};
+
 // Obtener mensajes de un servicio específico
 export const getMessagesByService = async (req, res) => {
   try {
@@ -14,9 +23,9 @@ export const getMessagesByService = async (req, res) => {
       return res.status(404).json({ error: "Servicio no encontrado" });
     }
 
-    // Verificar que el usuario participe en el servicio
-    if (service.clienteId !== userId && service.profesionalId !== userId) {
-      return res.status(403).json({ error: "No autorizado para ver estos mensajes" });
+    // Chat solo disponible cuando hay profesional asignado y estado habilitado
+    if (!canUseServiceChat(service, userId)) {
+      return res.status(403).json({ error: "Chat no disponible para este servicio" });
     }
 
     const messages = db.data.messages.filter(m => m.servicioId === serviceId);
@@ -39,9 +48,9 @@ export const sendMessage = async (req, res) => {
       return res.status(404).json({ error: "Servicio no encontrado" });
     }
 
-    // Verificar que el usuario participe en el servicio
-    if (service.clienteId !== remitenteId && service.profesionalId !== remitenteId) {
-      return res.status(403).json({ error: "No autorizado para enviar mensajes en este servicio" });
+    // Chat solo disponible cuando hay profesional asignado y estado habilitado
+    if (!canUseServiceChat(service, remitenteId)) {
+      return res.status(403).json({ error: "Chat no disponible para este servicio" });
     }
 
     // Determinar destinatario

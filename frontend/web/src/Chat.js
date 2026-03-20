@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import API_CONFIG from "./config/api.js";
 
 function Chat({ serviceId, user, onClose }) {
@@ -9,22 +9,7 @@ function Chat({ serviceId, user, onClose }) {
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
 
-  useEffect(() => {
-    fetchMessages();
-    setupSocketConnection();
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, [serviceId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_CONFIG.BASE_URL}/chat/service/${serviceId}`, {
@@ -42,9 +27,9 @@ function Chat({ serviceId, user, onClose }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [serviceId]);
 
-  const setupSocketConnection = () => {
+  const setupSocketConnection = useCallback(() => {
     // Importar socket.io-client dinámicamente
     import("socket.io-client").then(({ io }) => {
       const socket = io(API_CONFIG.BASE_URL);
@@ -74,7 +59,22 @@ function Chat({ serviceId, user, onClose }) {
 
       socketRef.current = socket;
     });
-  };
+  }, [serviceId, user.id]);
+
+  useEffect(() => {
+    fetchMessages();
+    setupSocketConnection();
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [fetchMessages, setupSocketConnection]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const sendMessage = async (e) => {
     e.preventDefault();

@@ -71,7 +71,26 @@ export const getServiceRequests = async (req, res) => {
       );
     }
 
-    res.json(requests);
+    const usersById = new Map((db.data.users || []).map((u) => [u.id, u]));
+    const enriched = requests.map((r) => ({
+      ...r,
+      clienteNombre: usersById.get(r.clienteId)?.nombre || null,
+      profesionalNombre: usersById.get(r.profesionalId)?.nombre || null,
+    }));
+
+    // Paginación opcional simple
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit || "50", 10)));
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    res.json({
+      items: enriched.slice(start, end),
+      page,
+      limit,
+      total: enriched.length,
+      totalPages: Math.ceil(enriched.length / limit) || 1,
+    });
   } catch (err) {
     res.status(500).json({ error: "Error al obtener solicitudes", details: err.message });
   }
@@ -116,7 +135,11 @@ export const getServiceRequestById = async (req, res) => {
 // Aceptar solicitud (profesional acepta trabajo)
 export const acceptServiceRequest = async (req, res) => {
   try {
-    const { presupuestoOferido, fechaCompromiso } = req.body;
+    if (req.user.rol !== "profesional" && req.user.rol !== "admin") {
+      return res.status(403).json({ error: "Solo profesionales o admin pueden aceptar solicitudes" });
+    }
+
+    const { presupuestoOferido, fechaCompromiso, profesionalId } = req.body;
 
     await db.read();
     const request = db.data.serviceRequests.find((r) => r.id === req.params.id);
@@ -132,7 +155,10 @@ export const acceptServiceRequest = async (req, res) => {
     }
 
     // Actualizar solicitud
-    request.profesionalId = req.user.id;
+    request.profesionalId = req.user.rol === "admin" ? profesionalId : req.user.id;
+    if (req.user.rol === "admin" && !request.profesionalId) {
+      return res.status(400).json({ error: "Admin debe asignar un profesional explícitamente" });
+    }
     request.estado = "aceptado";
     if (presupuestoOferido) request.presupuestoOferido = presupuestoOferido;
     if (fechaCompromiso) request.fechaCompromiso = fechaCompromiso;

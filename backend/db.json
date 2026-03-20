@@ -1,9 +1,193 @@
 {
+  "users": [
+    {
+      "id": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "nombre": "Cliente Demo",
+      "email": "cliente@test.com",
+      "password": "$2a$10$fOEfGAp7Tu46cxJiQzPR1O2J6/FvoCa3EPG5sgINXMFispuNZ9Ae.",
+      "rol": "cliente",
+      "ubicacion": "Barrio Centro",
+      "telefono": "111111111",
+      "metodosPago": [
+        {
+          "tipo": "mercadopago",
+          "alias": "cliente-mp"
+        }
+      ],
+      "creadoEn": "2026-03-20T21:31:47.356Z"
+    },
+    {
+      "id": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "nombre": "Profesional Demo",
+      "email": "profesional@test.com",
+      "password": "$2a$10$FfU89TBiCd76o6DfbAUugODdr3w4Gr9oR1te84GQv.hP4OBcpv7Lm",
+      "rol": "profesional",
+      "ubicacion": "Barrio Norte",
+      "telefono": "222222222",
+      "metodosPago": [
+        {
+          "tipo": "mercadopago",
+          "alias": "pro-mp"
+        }
+      ],
+      "creadoEn": "2026-03-20T21:31:47.408Z"
+    },
+    {
+      "id": "d58bc8d8-a787-412b-b080-3ed59dec43d6",
+      "nombre": "Admin Demo",
+      "email": "admin@test.com",
+      "password": "$2a$10$oi0wHbgFZyzNH2BrrDSYSeoIPGqkAdX/ftmrtiMg4xMCR6UFUlUY.",
+      "rol": "admin",
+      "ubicacion": null,
+      "telefono": null,
+      "metodosPago": [],
+      "creadoEn": "2026-03-20T21:31:47.484Z"
+    }
+  ],
   "workers": [
     {
-      "nombre": "Luciano",
+      "id": "47dfce6a-f823-47a9-b73e-7259658f2057",
+      "userId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "nombre": "Profesional Demo",
       "oficio": "Plomero",
-      "telefono": "1135060206"
+      "descripcion": "Experto en reparaciones y mantenimiento del hogar.",
+      "experiencia": "5 años de experiencia en instalaciones y reparaciones.",
+      "imagenes": [],
+      "aliasPago": "pro-mp",
+      "telefono": "333333333",
+      "tarifa": 25000,
+      "disponibilidad": "Lun-Vie 9-18",
+      "dni": "12345678",
+      "verificado": false,
+      "creadoEn": "2026-03-20T21:31:47.484Z"
+    }
+  ],
+  "serviceCategories": [],
+  "professionalProfiles": [],
+  "serviceRequests": [
+    {
+      "id": "a94d4736-6690-41e1-9d13-3a429ee4426c",
+      "clienteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "profesionalId": null,
+      "tipoServicio": "Plomería",
+      "descripcion": "Tengo una pérdida de agua en el baño.",
+      "ubicacion": "Calle Falsa 123",
+      "fotos": [],
+      "presupuestoOferido": null,
+      "estado": "aceptado",
+      "fechaSolicitud": "2026-03-20T21:31:47.484Z",
+      "fechaCompromiso": null,
+      "calificacion": null,
+      "comentario": null,
+      "pagoEstado": "pendiente",
+      "pagadoEn": null
+    },
+    {
+      "id": "4c312956-eaa5-470a-b13d-d4aa3fad2fa9",
+      "clienteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "profesionalId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "tipoServicio": "Plomería",
+      "descripcion": "Arreglo de canilla y revisión de cañerías.",
+      "ubicacion": "Calle Falsa 456",
+      "fotos": [],
+      "presupuestoOferido": 50000,
+      "estado": "aceptado",
+      "fechaSolicitud": "2026-03-20T21:31:47.484Z",
+      "fechaCompromiso": "2026-03-21T21:31:47.484Z",
+      "calificacion": null,
+      "comentario": null,
+      "pagoEstado": "pendiente",
+      "pagadoEn": null
+    },
+    {
+      "id": "68b951fb-9a0d-417a-af16-72fd0c4cec46",
+      "clienteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "profesionalId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "tipoServicio": "Plomería",
+      "descripcion": "Reparación de desagüe en cocina.",
+      "ubicacion": "Calle Falsa 789",
+      "fotos": [],
+      "presupuestoOferido": 60000,
+      "estado": "completado",
+      "fechaSolicitud": "2026-03-18T21:31:47.484Z",
+      "fechaCompromiso": "2026-03-19T21:31:47.484Z",
+      "calificacion": 4,
+      "comentario": "Buen trabajo, llegó a horario.",
+      "pagoEstado": "pendiente",
+      "pagadoEn": null
+    },
+    {
+      "id": "163b1be9-80dd-410a-8659-85de56b8217f",
+      "clienteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "profesionalId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "tipoServicio": "Plomería",
+      "descripcion": "Instalación de grifería nueva.",
+      "ubicacion": "Calle Falsa 321",
+      "fotos": [],
+      "presupuestoOferido": 70000,
+      "estado": "completado",
+      "fechaSolicitud": "2026-03-15T21:31:47.484Z",
+      "fechaCompromiso": "2026-03-16T21:31:47.484Z",
+      "calificacion": 5,
+      "comentario": "Excelente atención y resultado.",
+      "pagoEstado": "pagado",
+      "pagadoEn": "2026-03-17T21:31:47.484Z"
+    }
+  ],
+  "reviews": [],
+  "messages": [
+    {
+      "id": "dee2705e-efc2-4dcc-af93-2b41b9063898",
+      "remitenteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "destinatarioId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "servicioId": "4c312956-eaa5-470a-b13d-d4aa3fad2fa9",
+      "contenido": "Hola, ¿tenés disponibilidad esta semana?",
+      "fecha": "2026-03-19T21:31:47.484Z",
+      "tipo": "texto",
+      "leido": false
+    },
+    {
+      "id": "42806ff2-7544-4d3b-89e6-a3721f8515f2",
+      "remitenteId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "destinatarioId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "servicioId": "4c312956-eaa5-470a-b13d-d4aa3fad2fa9",
+      "contenido": "Sí. Te propongo mañana a la tarde.",
+      "fecha": "2026-03-19T21:31:47.484Z",
+      "tipo": "texto",
+      "leido": false
+    },
+    {
+      "id": "0e2a2e43-9994-49a6-82d4-7ea760332d52",
+      "remitenteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "destinatarioId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "servicioId": "163b1be9-80dd-410a-8659-85de56b8217f",
+      "contenido": "Gracias por el servicio!",
+      "fecha": "2026-03-17T21:31:47.484Z",
+      "tipo": "texto",
+      "leido": true
+    },
+    {
+      "id": "1774042362102",
+      "remitenteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "destinatarioId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "servicioId": "163b1be9-80dd-410a-8659-85de56b8217f",
+      "contenido": "gati",
+      "fecha": "2026-03-20T21:32:42.102Z",
+      "tipo": "texto",
+      "leido": false
+    }
+  ],
+  "transactions": [
+    {
+      "id": "3646549c-da6f-41c5-b4c1-5bccf04cbf57",
+      "clienteId": "a2ffef2e-aa5a-4399-bea8-d5dbe300332d",
+      "profesionalId": "39b4cd56-a5cd-4c39-bbc2-61f7be90acf9",
+      "servicioId": "163b1be9-80dd-410a-8659-85de56b8217f",
+      "montoTotal": 70000,
+      "montoComision": 7000,
+      "montoProfesional": 63000,
+      "estado": "aprobada",
+      "fecha": "2026-03-17T21:31:47.484Z"
     }
   ]
 }

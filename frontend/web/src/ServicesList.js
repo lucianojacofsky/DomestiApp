@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import API_CONFIG from "./config/api.js";
 import Chat from "./Chat.js";
 
@@ -7,24 +7,25 @@ function ServicesList({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState(""); // filtro por estado
-  const [selectedService, setSelectedService] = useState(null);
+  const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [chatServiceId, setChatServiceId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ totalPages: 1, total: 0 });
 
-  useEffect(() => {
-    fetchServices();
-  }, [filter]);
-
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("token");
 
       let url = `${API_CONFIG.BASE_URL}/services`;
-      if (filter) {
-        url += `?estado=${filter}`;
-      }
+      const params = new URLSearchParams();
+      if (filter) params.append("estado", filter);
+      if (search.trim()) params.append("tipoServicio", search.trim());
+      params.append("page", String(page));
+      params.append("limit", "10");
+      url += `?${params.toString()}`;
 
       const res = await fetch(url, {
         headers: {
@@ -37,21 +38,29 @@ function ServicesList({ user }) {
       }
 
       const data = await res.json();
-      setServices(data);
+      setServices(data.items || []);
+      setMeta({
+        totalPages: data.totalPages || 1,
+        total: data.total || 0,
+      });
     } catch (err) {
       setError("Error: " + err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, search, page]);
 
-  const handleAcceptService = async (serviceId) => {
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  const handleAcceptService = async (service) => {
     try {
       setActionLoading(true);
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `${API_CONFIG.BASE_URL}/services/${serviceId}/accept`,
+        `${API_CONFIG.BASE_URL}/services/${service.id}/accept`,
         {
           method: "POST",
           headers: {
@@ -59,8 +68,8 @@ function ServicesList({ user }) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            presupuestoOferido: selectedService?.presupuestoOferido,
-            fechaCompromiso: selectedService?.fechaCompromiso,
+            presupuestoOferido: service?.presupuestoOferido,
+            fechaCompromiso: service?.fechaCompromiso,
           }),
         }
       );
@@ -70,7 +79,6 @@ function ServicesList({ user }) {
       }
 
       fetchServices();
-      setSelectedService(null);
       alert("Solicitud aceptada");
     } catch (err) {
       alert("Error: " + err.message);
@@ -167,8 +175,12 @@ function ServicesList({ user }) {
       }
 
       const data = await res.json();
-      // Redirigir a MercadoPago
-      window.location.href = data.init_point;
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        alert(data.message || "Pago iniciado en modo simulado");
+        fetchServices();
+      }
     } catch (err) {
       alert("Error: " + err.message);
     } finally {
@@ -202,17 +214,31 @@ function ServicesList({ user }) {
           <h2 className="text-2xl font-bold text-gray-900">
             Solicitudes de Servicios
           </h2>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todos los estados</option>
-            <option value="pendiente">Pendientes</option>
-            <option value="aceptado">Aceptados</option>
-            <option value="en_progreso">En Progreso</option>
-            <option value="completado">Completados</option>
-          </select>
+          <div className="flex gap-2">
+            <input
+              value={search}
+              onChange={(e) => {
+                setPage(1);
+                setSearch(e.target.value);
+              }}
+              placeholder="Buscar por tipo de servicio"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <select
+              value={filter}
+              onChange={(e) => {
+                setPage(1);
+                setFilter(e.target.value);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="aceptado">Aceptados</option>
+              <option value="en_progreso">En Progreso</option>
+              <option value="completado">Completados</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -239,6 +265,16 @@ function ServicesList({ user }) {
                   <p className="text-sm text-gray-500 mt-2">
                     📍 {service.ubicacion}
                   </p>
+                  {user?.rol === "cliente" && service.profesionalNombre && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Profesional asignado: <strong>{service.profesionalNombre}</strong>
+                    </p>
+                  )}
+                  {user?.rol === "profesional" && service.clienteNombre && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Cliente: <strong>{service.clienteNombre}</strong>
+                    </p>
+                  )}
                 </div>
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusBadgeColor(
@@ -270,12 +306,18 @@ function ServicesList({ user }) {
                     <p className="font-semibold">⭐ {service.calificacion}/5</p>
                   </div>
                 )}
+                {service.pagoEstado && (
+                  <div>
+                    <p className="text-gray-600">Pago</p>
+                    <p className="font-semibold capitalize">{service.pagoEstado}</p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-2 flex-wrap">
                 {user?.rol === "profesional" && service.estado === "pendiente" && (
                   <button
-                    onClick={() => handleAcceptService(service.id)}
+                    onClick={() => handleAcceptService(service)}
                     disabled={actionLoading}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition"
                   >
@@ -303,7 +345,7 @@ function ServicesList({ user }) {
                         Marcar Completado
                       </button>
                     )}
-                    {service.estado === "completado" && (
+                    {service.estado === "completado" && service.pagoEstado !== "pagado" && (
                       <button
                         onClick={() => handlePayService(service.id)}
                         disabled={actionLoading}
@@ -344,6 +386,29 @@ function ServicesList({ user }) {
           ))}
         </div>
       )}
+
+      <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+        <p className="text-sm text-gray-600">Total: {meta.total}</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={page <= 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span className="text-sm text-gray-700">
+            Página {page} de {meta.totalPages}
+          </span>
+          <button
+            onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
+            disabled={page >= meta.totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
 
       {chatServiceId && (
         <Chat

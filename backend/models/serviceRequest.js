@@ -16,6 +16,8 @@ export default class ServiceRequest {
     this.fechaCompromiso = data.fechaCompromiso || null; // Cuando se espera completar
     this.calificacion = data.calificacion || null; // 1-5 estrellas
     this.comentario = data.comentario || null;
+    this.pagoEstado = data.pagoEstado || "pendiente"; // pendiente | pagado | rechazado
+    this.pagadoEn = data.pagadoEn || null;
   }
 
   toJSON() {
@@ -33,6 +35,8 @@ export default class ServiceRequest {
       fechaCompromiso: this.fechaCompromiso,
       calificacion: this.calificacion,
       comentario: this.comentario,
+      pagoEstado: this.pagoEstado,
+      pagadoEn: this.pagadoEn,
     };
   }
 }

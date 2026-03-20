@@ -1,11 +1,17 @@
 import { db } from "../server.js";
 import Transaction from "../models/transaction.js";
-// import mercadopago from "mercadopago";
 
-// Configurar MercadoPago
-// if (process.env.MP_ACCESS_TOKEN) {
-//   mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
-// }
+const resolveFrontendUrl = () => process.env.FRONTEND_URL || "http://localhost:3000";
+const resolveBackendUrl = () => process.env.BACKEND_URL || "http://localhost:5000";
+
+const getMercadoPagoClient = async () => {
+  const accessToken = process.env.MP_ACCESS_TOKEN;
+  if (!accessToken) return null;
+
+  const mercadopago = (await import("mercadopago")).default;
+  mercadopago.configure({ access_token: accessToken });
+  return mercadopago;
+};
 
 export const crearPago = async (req, res) => {
   const { clienteId, profesionalId, servicioId, montoTotal } = req.body;
@@ -30,25 +36,35 @@ export const crearPago = async (req, res) => {
   await db.write();
 
   try {
-    // const preference = await mercadopago.preferences.create({
-    //   items: [
-    //     {
-    //       title: "Servicio DomestiApp",
-    //       quantity: 1,
-    //       currency_id: "ARS",
-    //       unit_price: montoTotal
-    //     }
-    //   ],
-    //   back_urls: {
-    //     success: "http://localhost:3000/success",
-    //     failure: "http://localhost:3000/failure",
-    //     pending: "http://localhost:3000/pending"
-    //   },
-    //   auto_return: "approved"
-    // });
+    const mp = await getMercadoPagoClient();
+    if (!mp) {
+      return res.json({ id: nuevaTransaccion.id, simulated: true, message: "Pago simulado creado" });
+    }
 
-    // res.json({ id: nuevaTransaccion.id, init_point: preference.body.init_point });
-    res.json({ id: nuevaTransaccion.id, message: "Pago simulado creado" });
+    const preference = await mp.preferences.create({
+      items: [
+        {
+          title: "Servicio DomestiApp",
+          quantity: 1,
+          currency_id: "ARS",
+          unit_price: montoTotal,
+        },
+      ],
+      back_urls: {
+        success: `${resolveFrontendUrl()}/payment/success`,
+        failure: `${resolveFrontendUrl()}/payment/failure`,
+        pending: `${resolveFrontendUrl()}/payment/pending`,
+      },
+      auto_return: "approved",
+      external_reference: nuevaTransaccion.id,
+      notification_url: `${resolveBackendUrl()}/payments/webhook`,
+    });
+
+    return res.json({
+      id: nuevaTransaccion.id,
+      init_point: preference.body.init_point,
+      simulated: false,
+    });
   } catch (error) {
     res.status(500).json({ error: "Error al crear pago", detalle: error.message });
   }
@@ -56,6 +72,10 @@ export const crearPago = async (req, res) => {
 
 export const obtenerTransacciones = async (req, res) => {
   const { userId } = req.params;
+    if (req.user.rol !== "admin" && req.user.id !== userId) {
+      return res.status(403).json({ error: "No autorizado para ver estas transacciones" });
+    }
+
 
   try {
     await db.read();
@@ -110,31 +130,42 @@ export const pagarServicio = async (req, res) => {
     db.data.transactions.push(nuevaTransaccion);
     await db.write();
 
-    // const preference = await mercadopago.preferences.create({
-    //   items: [
-    //     {
-    //       title: `Servicio ${service.tipoServicio}`,
-    //       quantity: 1,
-    //       currency_id: "ARS",
-    //       unit_price: montoTotal
-    //     }
-    //   ],
-    //   back_urls: {
-    //     success: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
-    //     failure: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/failure`,
-    //     pending: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/pending`
-    //   },
-    //   auto_return: "approved",
-    //   external_reference: nuevaTransaccion.id
-    // });
+    const mp = await getMercadoPagoClient();
+    if (!mp) {
+      nuevaTransaccion.estado = "aprobada";
+      service.pagoEstado = "pagado";
+      service.pagadoEn = new Date().toISOString();
+      await db.write();
+      return res.json({
+        transactionId: nuevaTransaccion.id,
+        simulated: true,
+        message: "Pago simulado aprobado",
+      });
+    }
 
-    // res.json({
-    //   transactionId: nuevaTransaccion.id,
-    //   init_point: preference.body.init_point
-    // });
-    res.json({
+    const preference = await mp.preferences.create({
+      items: [
+        {
+          title: `Servicio ${service.tipoServicio}`,
+          quantity: 1,
+          currency_id: "ARS",
+          unit_price: montoTotal,
+        },
+      ],
+      back_urls: {
+        success: `${resolveFrontendUrl()}/payment/success`,
+        failure: `${resolveFrontendUrl()}/payment/failure`,
+        pending: `${resolveFrontendUrl()}/payment/pending`,
+      },
+      auto_return: "approved",
+      external_reference: nuevaTransaccion.id,
+      notification_url: `${resolveBackendUrl()}/payments/webhook`,
+    });
+
+    return res.json({
       transactionId: nuevaTransaccion.id,
-      message: "Pago simulado iniciado"
+      init_point: preference.body.init_point,
+      simulated: false,
     });
   } catch (error) {
     res.status(500).json({ error: "Error al iniciar pago", detalle: error.message });

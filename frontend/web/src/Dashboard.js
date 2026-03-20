@@ -4,12 +4,14 @@ import WorkersList from "./WorkersList";
 import RequestService from "./RequestService";
 import ServicesList from "./ServicesList";
 import TransactionsList from "./TransactionsList";
-import Chat from "./Chat.js";
 import ProfessionalProfile from "./ProfessionalProfile";
 import UserProfile from "./UserProfile";
+import AdminPanel from "./AdminPanel";
 
 function Dashboard({ user, onLogout }) {
-  const [activeTab, setActiveTab] = useState("servicios");
+  const [activeTab, setActiveTab] = useState(
+    user?.rol === "admin" ? "admin" : "servicios"
+  );
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRequestCreated = () => {
@@ -52,36 +54,42 @@ function Dashboard({ user, onLogout }) {
             >
               Solicitudes de Servicios
             </button>
-            <button
-              onClick={() => setActiveTab("solicitar")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "solicitar"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              Solicitar Servicio
-            </button>
-            <button
-              onClick={() => setActiveTab("transacciones")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "transacciones"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              Transacciones
-            </button>
-            <button
-              onClick={() => setActiveTab("perfil")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "perfil"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              Perfil
-            </button>
+            {user?.rol === "cliente" && (
+              <button
+                onClick={() => setActiveTab("solicitar")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "solicitar"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                }`}
+              >
+                Solicitar Servicio
+              </button>
+            )}
+            {(user?.rol === "cliente" || user?.rol === "profesional") && (
+              <button
+                onClick={() => setActiveTab("transacciones")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "transacciones"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                }`}
+              >
+                Transacciones
+              </button>
+            )}
+            {user?.rol !== "admin" && (
+              <button
+                onClick={() => setActiveTab("perfil")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "perfil"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                }`}
+              >
+                Perfil
+              </button>
+            )}
             {user?.rol === "profesional" && (
               <button
                 onClick={() => setActiveTab("trabajadores")}
@@ -92,6 +100,18 @@ function Dashboard({ user, onLogout }) {
                 }`}
               >
                 Mi Perfil
+              </button>
+            )}
+            {user?.rol === "admin" && (
+              <button
+                onClick={() => setActiveTab("admin")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "admin"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                }`}
+              >
+                Administración
               </button>
             )}
           </nav>
@@ -137,6 +157,8 @@ function Dashboard({ user, onLogout }) {
               </p>
             </div>
           )}
+
+          {activeTab === "admin" && user?.rol === "admin" && <AdminPanel />}
         </div>
       </main>
     </div>

@@ -3,8 +3,11 @@ import API_CONFIG from "./config/api.js";
 
 function WorkersList({ onRefresh }) {
   const [workers, setWorkers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const pageSize = 10;
 
   useEffect(() => {
     fetchWorkers();
@@ -81,12 +84,29 @@ function WorkersList({ onRefresh }) {
     );
   }
 
+  const filteredWorkers = workers.filter((w) =>
+    `${w.nombre} ${w.oficio}`.toLowerCase().includes(search.toLowerCase())
+  );
+  const totalPages = Math.max(1, Math.ceil(filteredWorkers.length / pageSize));
+  const pageWorkers = filteredWorkers.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <div className="p-6 border-b border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Lista de Trabajadores ({workers.length})
-        </h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Lista de Trabajadores ({filteredWorkers.length})
+          </h2>
+          <input
+            value={search}
+            onChange={(e) => {
+              setPage(1);
+              setSearch(e.target.value);
+            }}
+            placeholder="Buscar por nombre u oficio"
+            className="px-3 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
       </div>
 
       {error && (
@@ -117,7 +137,7 @@ function WorkersList({ onRefresh }) {
             </tr>
           </thead>
           <tbody>
-            {workers.map((worker) => (
+            {pageWorkers.map((worker) => (
               <tr
                 key={worker.id}
                 className="border-b border-gray-200 hover:bg-gray-50 transition"
@@ -141,6 +161,25 @@ function WorkersList({ onRefresh }) {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+        <p className="text-sm text-gray-600">Página {page} de {totalPages}</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={page <= 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <button
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={page >= totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </div>
   );

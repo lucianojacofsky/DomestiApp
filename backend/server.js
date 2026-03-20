@@ -13,12 +13,14 @@ import serviceRoutes from "./routes/serviceRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 // Más adelante: serviceRoutes, reviewRoutes, paymentRoutes, etc.
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 // Base de datos con todas las entidades iniciales
 const adapter = new JSONFile("db.json");
@@ -40,7 +42,8 @@ db.data ||= {
   professionalProfiles: [],
   serviceRequests: [],
   reviews: [],
-  messages: []
+  messages: [],
+  transactions: [],
 };
 await db.write();
 
@@ -50,6 +53,7 @@ app.use("/users", userRoutes);
 app.use("/services", serviceRoutes);
 app.use("/payments", paymentRoutes);
 app.use("/chat", chatRoutes);
+app.use("/uploads-api", uploadRoutes);
 
 // Webhook de MercadoPago (sin autenticación)
 app.post("/payments/webhook", async (req, res) => {
@@ -75,8 +79,21 @@ app.post("/payments/webhook", async (req, res) => {
       if (transaction) {
         if (status === "approved") {
           transaction.estado = "aprobada";
+          const relatedService = db.data.serviceRequests.find(
+            (service) => service.id === transaction.servicioId
+          );
+          if (relatedService) {
+            relatedService.pagoEstado = "pagado";
+            relatedService.pagadoEn = new Date().toISOString();
+          }
         } else if (status === "rejected" || status === "cancelled") {
           transaction.estado = "rechazada";
+          const relatedService = db.data.serviceRequests.find(
+            (service) => service.id === transaction.servicioId
+          );
+          if (relatedService) {
+            relatedService.pagoEstado = "rechazado";
+          }
         }
         await db.write();
       }
@@ -115,7 +132,14 @@ io.on("connection", (socket) => {
       await db.read();
       const service = db.data.serviceRequests.find(s => s.id === serviceId);
 
-      if (!service || (service.clienteId !== userId && service.profesionalId !== userId)) {
+      const validStates = ["aceptado", "en_progreso", "completado"];
+      const canJoinChat =
+        service &&
+        service.profesionalId &&
+        validStates.includes(service.estado) &&
+        (service.clienteId === userId || service.profesionalId === userId);
+
+      if (!canJoinChat) {
         socket.emit("error", { message: "No autorizado para unirse a este chat" });
         return;
       }
@@ -149,7 +173,14 @@ io.on("connection", (socket) => {
       await db.read();
       const service = db.data.serviceRequests.find(s => s.id === serviceId);
 
-      if (!service || (service.clienteId !== userId && service.profesionalId !== userId)) {
+      const validStates = ["aceptado", "en_progreso", "completado"];
+      const canSendMessage =
+        service &&
+        service.profesionalId &&
+        validStates.includes(service.estado) &&
+        (service.clienteId === userId || service.profesionalId === userId);
+
+      if (!canSendMessage) {
         socket.emit("error", { message: "No autorizado para enviar mensajes" });
         return;
       }

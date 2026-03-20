@@ -21,7 +21,7 @@ function RequestService({ onRequestCreated }) {
 
   const handleFiles = async (e) => {
     const files = Array.from(e.target.files || []);
-    const base64Files = await Promise.all(
+    const dataUrls = await Promise.all(
       files.map((file) =>
         new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -31,7 +31,23 @@ function RequestService({ onRequestCreated }) {
         })
       )
     );
-    setFormData((prev) => ({ ...prev, fotos: base64Files }));
+    const token = localStorage.getItem("token");
+    const uploadedUrls = await Promise.all(
+      dataUrls.map(async (dataUrl) => {
+        const res = await fetch(`${API_CONFIG.BASE_URL}/uploads-api/base64-image`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ dataUrl }),
+        });
+        if (!res.ok) throw new Error("No se pudo subir una imagen");
+        const data = await res.json();
+        return `${API_CONFIG.BASE_URL}${data.url}`;
+      })
+    );
+    setFormData((prev) => ({ ...prev, fotos: uploadedUrls }));
   };
 
   const handleSubmit = async (e) => {

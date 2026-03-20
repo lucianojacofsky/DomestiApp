@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import API_CONFIG from "./config/api.js";
 
-function Login({ onLoginSuccess }) {
+function Login({ onLoginSuccess, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -92,7 +92,7 @@ function Login({ onLoginSuccess }) {
         <p className="text-center text-gray-600 mt-6">
           ¿No tienes cuenta?{" "}
           <button
-            onClick={() => window.location.hash = "#register"}
+            onClick={onSwitchToRegister}
             className="text-blue-600 hover:underline font-semibold"
           >
             Regístrate aquí

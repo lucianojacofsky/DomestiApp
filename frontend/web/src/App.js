@@ -53,9 +53,17 @@ function App() {
     <>
       {!user ? (
         <>
-          {currentPage === "login" && <Login onLoginSuccess={handleLoginSuccess} />}
+          {currentPage === "login" && (
+            <Login
+              onLoginSuccess={handleLoginSuccess}
+              onSwitchToRegister={() => setCurrentPage("register")}
+            />
+          )}
           {currentPage === "register" && (
-            <Register onRegisterSuccess={handleRegisterSuccess} />
+            <Register
+              onRegisterSuccess={handleRegisterSuccess}
+              onSwitchToLogin={() => setCurrentPage("login")}
+            />
           )}
         </>
       ) : (

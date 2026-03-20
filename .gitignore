@@ -8,3 +8,10 @@ node_modules/
 
 # Environment variables
 .env
+.env.local
+
+# Runtime uploads
+backend/uploads/
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

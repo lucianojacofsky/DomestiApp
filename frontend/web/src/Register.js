@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import API_CONFIG from "./config/api.js";
 
-function Register({ onRegisterSuccess }) {
+function Register({ onRegisterSuccess, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -177,7 +177,7 @@ function Register({ onRegisterSuccess }) {
         <p className="text-center text-gray-600 mt-6">
           ¿Ya tienes cuenta?{" "}
           <button
-            onClick={() => window.location.hash = "#login"}
+            onClick={onSwitchToLogin}
             className="text-blue-600 hover:underline font-semibold"
           >
             Inicia sesión aquí

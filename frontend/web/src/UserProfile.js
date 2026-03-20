@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import API_CONFIG from "./config/api.js";
 
 function UserProfile() {
-  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -31,7 +30,6 @@ function UserProfile() {
       if (!res.ok) throw new Error(`Error ${res.status}`);
 
       const data = await res.json();
-      setProfile(data);
       setFormData({
         nombre: data.nombre || "",
         ubicacion: data.ubicacion || "",
@@ -93,7 +91,6 @@ function UserProfile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
 
-      setProfile(data);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {

@@ -21,12 +21,12 @@ router.post("/", authMiddleware(), createServiceRequest);
 router.get("/:id", authMiddleware(), getServiceRequestById);
 
 // POST aceptar solicitud (profesional)
-router.post("/:id/accept", authMiddleware(), acceptServiceRequest);
+router.post("/:id/accept", authMiddleware(["profesional", "admin"]), acceptServiceRequest);
 
 // POST completar solicitud (cliente)
-router.post("/:id/complete", authMiddleware(), completeServiceRequest);
+router.post("/:id/complete", authMiddleware(["cliente", "admin"]), completeServiceRequest);
 
 // POST cancelar solicitud (cliente)
-router.post("/:id/cancel", authMiddleware(), cancelServiceRequest);
+router.post("/:id/cancel", authMiddleware(["cliente", "admin"]), cancelServiceRequest);
 
 export default router;
