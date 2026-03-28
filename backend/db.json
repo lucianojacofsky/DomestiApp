@@ -42,6 +42,16 @@
       "telefono": null,
       "metodosPago": [],
       "creadoEn": "2026-03-20T21:31:47.484Z"
+    },
+    {
+      "id": "2ca36bfa-047c-4af1-9b0d-807c04f9240d",
+      "nombre": "asd",
+      "email": "asd@guido.com",
+      "rol": "profesional",
+      "ubicacion": null,
+      "telefono": null,
+      "metodosPago": [],
+      "creadoEn": "2026-03-27T23:57:09.803Z"
     }
   ],
   "workers": [
