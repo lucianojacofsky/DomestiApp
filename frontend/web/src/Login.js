@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import API_CONFIG from "./config/api.js";
 
-function Login({ onLoginSuccess, onSwitchToRegister }) {
+function Login({ onLoginSuccess, onSwitchToRegister, onSwitchToLanding }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,6 @@ function Login({ onLoginSuccess, onSwitchToRegister }) {
         throw new Error(data.error || `Error ${res.status}`);
       }
 
-      // Guardar token
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -38,10 +37,14 @@ function Login({ onLoginSuccess, onSwitchToRegister }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center px-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">DomestiApp</h1>
-        <p className="text-gray-600 mb-8">Inicia sesión en tu cuenta</p>
+    <div className="auth-shell min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="auth-card bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
+        <button type="button" className="auth-back" onClick={onSwitchToLanding}>
+          ← Volver al inicio
+        </button>
+
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Iniciar sesión</h1>
+        <p className="text-gray-600 mb-8">Gestioná tus servicios en DomestiApp</p>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">

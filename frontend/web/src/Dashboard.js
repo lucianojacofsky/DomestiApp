@@ -18,6 +18,13 @@ function Dashboard({ user, onLogout }) {
     setRefreshKey((prev) => prev + 1);
   };
 
+  const quickServices = [
+    { icon: "🧽", name: "Limpieza", detail: "Hogar, oficina y post-obra" },
+    { icon: "🛠️", name: "Mantenimiento", detail: "Plomería, electricidad y gas" },
+    { icon: "🏠", name: "Refacciones", detail: "Pintura, albañilería y mejoras" },
+    { icon: "🚚", name: "Mudanzas", detail: "Traslados y armado de muebles" },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow sticky top-0 z-50">
@@ -41,6 +48,41 @@ function Dashboard({ user, onLogout }) {
       </header>
 
       <main className="max-w-7xl mx-auto py-12 px-4">
+        <section className="home-hero">
+          <div>
+            <h2>Panel principal</h2>
+            <p>
+              Gestioná solicitudes, pagos y tu perfil profesional desde un solo lugar.
+            </p>
+          </div>
+          <div className="home-stats">
+            <article>
+              <strong>{user?.rol === "cliente" ? "Clientes" : "Servicios"}</strong>
+              <span>Atención prioritaria</span>
+            </article>
+            <article>
+              <strong>Pagos</strong>
+              <span>Checkout seguro integrado</span>
+            </article>
+            <article>
+              <strong>Soporte</strong>
+              <span>Seguimiento de solicitudes</span>
+            </article>
+          </div>
+        </section>
+
+        <section className="home-services-strip">
+          {quickServices.map((item) => (
+            <article key={item.name}>
+              <span>{item.icon}</span>
+              <div>
+                <h3>{item.name}</h3>
+                <p>{item.detail}</p>
+              </div>
+            </article>
+          ))}
+        </section>
+
         {/* Navegación de tabs */}
         <div className="mb-8 border-b border-gray-200">
           <nav className="flex space-x-8">
