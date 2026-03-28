@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import API_CONFIG from "./config/api.js";
 
-function Register({ onRegisterSuccess, onSwitchToLogin }) {
+function Register({ onRegisterSuccess, onSwitchToLogin, onSwitchToLanding }) {
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -23,7 +23,6 @@ function Register({ onRegisterSuccess, onSwitchToLogin }) {
     setError(null);
     setSuccess(false);
 
-    // Validación básica
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
@@ -51,7 +50,6 @@ function Register({ onRegisterSuccess, onSwitchToLogin }) {
         throw new Error(data.error || `Error ${res.status}`);
       }
 
-      // Guardar token y usuario
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -67,10 +65,14 @@ function Register({ onRegisterSuccess, onSwitchToLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center px-4 py-8">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">DomestiApp</h1>
-        <p className="text-gray-600 mb-8">Crea tu cuenta</p>
+    <div className="auth-shell min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="auth-card bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
+        <button type="button" className="auth-back" onClick={onSwitchToLanding}>
+          ← Volver al inicio
+        </button>
+
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Crear cuenta</h1>
+        <p className="text-gray-600 mb-8">Comenzá a pedir o brindar servicios</p>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
