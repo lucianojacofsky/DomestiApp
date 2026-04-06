@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import API_CONFIG from "./config/api.js";
+import { Card, CardHeader, CardBody, CardFooter } from "./components/UI/Card";
+import { Input } from "./components/UI/Input";
+import { Button } from "./components/UI/Button";
+import { Alert } from "./components/UI/Alert";
+import { useTheme } from "./context/ThemeContext.js";
 
 function WorkerForm({ onWorkerAdded }) {
   const [nombre, setNombre] = useState("");
@@ -9,25 +14,74 @@ function WorkerForm({ onWorkerAdded }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const { isDark } = useTheme();
+
+  const validateField = (name, value) => {
+    const errors = { ...fieldErrors };
+    switch (name) {
+      case "nombre":
+        if (!value.trim() || value.length < 3) {
+          errors.nombre = "El nombre debe tener al menos 3 caracteres";
+        } else {
+          delete errors.nombre;
+        }
+        break;
+      case "oficio":
+        if (!value.trim() || value.length < 3) {
+          errors.oficio = "El oficio debe tener al menos 3 caracteres";
+        } else {
+          delete errors.oficio;
+        }
+        break;
+      case "telefono":
+        if (!/^\d{10,}$/.test(value)) {
+          errors.telefono = "El teléfono debe tener al menos 10 dígitos";
+        } else {
+          delete errors.telefono;
+        }
+        break;
+      case "tarifa":
+        if (value && isNaN(parseFloat(value))) {
+          errors.tarifa = "La tarifa debe ser un número válido";
+        } else {
+          delete errors.tarifa;
+        }
+        break;
+      default:
+        break;
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleChange = (field, value) => {
+    switch (field) {
+      case "nombre":
+        setNombre(value);
+        break;
+      case "oficio":
+        setOficio(value);
+        break;
+      case "telefono":
+        setTelefono(value);
+        break;
+      case "tarifa":
+        setTarifa(value);
+        break;
+      default:
+        break;
+    }
+    validateField(field, value);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
 
-    // Validación básica en frontend
-    if (!nombre.trim() || nombre.length < 3) {
-      setError("El nombre debe tener al menos 3 caracteres");
-      return;
-    }
-
-    if (!oficio.trim() || oficio.length < 3) {
-      setError("El oficio debe tener al menos 3 caracteres");
-      return;
-    }
-
-    if (!/^\d{10,}$/.test(telefono)) {
-      setError("El teléfono debe tener al menos 10 dígitos");
+    // Validar todos los campos
+    if (!validateField("nombre", nombre) || !validateField("oficio", oficio) || !validateField("telefono", telefono)) {
       return;
     }
 
@@ -65,97 +119,90 @@ function WorkerForm({ onWorkerAdded }) {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError("Error: " + err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Agregar Trabajador</h2>
+    <Card className="w-full">
+      <CardHeader>
+        <h2 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+          👷 Agregar Trabajador
+        </h2>
+        <p className={`text-sm mt-1 ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+          Registra un nuevo profesional en tu red
+        </p>
+      </CardHeader>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
+      <CardBody className="space-y-6">
+        {error && <Alert type="error">{error}</Alert>}
+        {success && <Alert type="success">¡Trabajador agregado exitosamente!</Alert>}
 
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-          ✓ Trabajador agregado exitosamente
-        </div>
-      )}
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Nombre
-          </label>
-          <input
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Input
+            label="📝 Nombre Completo"
+            icon="👤"
             type="text"
             placeholder="Ej: Juan Pérez"
             value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            onChange={(e) => handleChange("nombre", e.target.value)}
+            error={fieldErrors.nombre}
             disabled={loading}
+            dark={isDark}
+            required
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Oficio
-          </label>
-          <input
+          <Input
+            label="🔧 Oficio"
+            icon="⚙️"
             type="text"
             placeholder="Ej: Plomero, Electricista"
             value={oficio}
-            onChange={(e) => setOficio(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            onChange={(e) => handleChange("oficio", e.target.value)}
+            error={fieldErrors.oficio}
             disabled={loading}
+            dark={isDark}
+            required
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Teléfono
-          </label>
-          <input
+          <Input
+            label="📞 Teléfono"
+            icon="☎️"
             type="tel"
             placeholder="Ej: 1234567890"
             value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            onChange={(e) => handleChange("telefono", e.target.value)}
+            error={fieldErrors.telefono}
             disabled={loading}
+            dark={isDark}
+            required
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tarifa (Opcional)
-          </label>
-          <input
+          <Input
+            label="💰 Tarifa (Opcional)"
+            icon="💵"
             type="number"
             placeholder="Ej: 50000"
             value={tarifa}
-            onChange={(e) => setTarifa(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onChange={(e) => handleChange("tarifa", e.target.value)}
+            error={fieldErrors.tarifa}
             disabled={loading}
+            dark={isDark}
           />
-        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-        >
-          {loading ? "Guardando..." : "Guardar"}
-        </button>
-      </div>
-    </form>
+          <Button
+            type="submit"
+            disabled={loading || Object.keys(fieldErrors).length > 0}
+            loading={loading}
+            className="w-full"
+          >
+            {loading ? "Guardando..." : "✓ Guardar Trabajador"}
+          </Button>
+        </form>
+      </CardBody>
+    </Card>
   );
 }
 

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import API_CONFIG from "./config/api.js";
+import { Card, CardBody } from "./components/UI/Card";
+import { Input } from "./components/UI/Input";
+import { Button } from "./components/UI/Button";
+import { Alert } from "./components/UI/Alert";
+import { Badge } from "./components/UI/Badge";
+import { useTheme } from "./context/ThemeContext.js";
 
 function WorkersList({ onRefresh }) {
   const [workers, setWorkers] = useState([]);
@@ -7,7 +13,9 @@ function WorkersList({ onRefresh }) {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const pageSize = 10;
+  const [deletingId, setDeletingId] = useState(null);
+  const pageSize = 9;
+  const { isDark } = useTheme();
 
   useEffect(() => {
     fetchWorkers();
@@ -32,7 +40,7 @@ function WorkersList({ onRefresh }) {
       const data = await res.json();
       setWorkers(data);
     } catch (err) {
-      setError("Error: " + err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -44,8 +52,7 @@ function WorkersList({ onRefresh }) {
     }
 
     try {
-      setLoading(true);
-      setError(null);
+      setDeletingId(id);
       const token = localStorage.getItem("token");
 
       const res = await fetch(`${API_CONFIG.WORKERS_ENDPOINT}/${id}`, {
@@ -59,28 +66,36 @@ function WorkersList({ onRefresh }) {
         throw new Error(`Error al eliminar: ${res.status}`);
       }
 
-      // Refresca la lista
       fetchWorkers();
     } catch (err) {
-      setError("Error: " + err.message);
+      setError(err.message);
     } finally {
-      setLoading(false);
+      setDeletingId(null);
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-white shadow-md rounded-lg p-8 text-center">
-        <p className="text-gray-600 text-lg">Cargando trabajadores...</p>
-      </div>
+      <Card className="w-full">
+        <CardBody className="text-center py-12">
+          <div className="animate-pulse">
+            <p className={`text-lg ${isDark ? "text-neutral-300" : "text-gray-600"}`}>
+              Cargando trabajadores...
+            </p>
+          </div>
+        </CardBody>
+      </Card>
     );
   }
 
   if (workers.length === 0) {
     return (
-      <div className="bg-white shadow-md rounded-lg p-8 text-center">
-        <p className="text-gray-600 text-lg">No hay trabajadores registrados</p>
-      </div>
+      <Card className="w-full highlighted">
+        <CardBody className="text-center py-12">
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">👷 No hay trabajadores registrados</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Comienza a agregar profesionales a tu red</p>
+        </CardBody>
+      </Card>
     );
   }
 
@@ -91,96 +106,131 @@ function WorkersList({ onRefresh }) {
   const pageWorkers = filteredWorkers.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Lista de Trabajadores ({filteredWorkers.length})
-          </h2>
-          <input
+    <div className="w-full space-y-4">
+      {/* Encabezado y búsqueda */}
+      <div className={`${isDark ? "bg-neutral-800" : "bg-white"} rounded-2xl p-6 shadow-soft`}>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h2 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+              👷 Trabajadores
+            </h2>
+            <p className={`text-sm mt-1 ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+              {filteredWorkers.length} profesional{filteredWorkers.length !== 1 ? "es" : ""} disponible{filteredWorkers.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <Input
+            placeholder="🔍 Buscar por nombre u oficio..."
             value={search}
             onChange={(e) => {
               setPage(1);
               setSearch(e.target.value);
             }}
-            placeholder="Buscar por nombre u oficio"
-            className="px-3 py-2 border border-gray-300 rounded-lg"
+            dark={isDark}
+            className="md:w-64"
           />
         </div>
       </div>
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 m-4 rounded-lg">
-          {error}
-        </div>
-      )}
+      {/* Errores */}
+      {error && <Alert type="error">{error}</Alert>}
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-100 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Nombre
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Oficio
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Teléfono
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Tarifa
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+      {/* Grid de tarjetas */}
+      {filteredWorkers.length === 0 ? (
+        <Card className="w-full highlighted">
+          <CardBody className="text-center py-12">
+            <p className="text-lg text-gray-600 dark:text-gray-300">Sin resultados</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Intenta con otra búsqueda</p>
+          </CardBody>
+        </Card>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pageWorkers.map((worker) => (
-              <tr
+              <Card
                 key={worker.id}
-                className="border-b border-gray-200 hover:bg-gray-50 transition"
+                className={`overflow-hidden transition-all hover:shadow-lg ${
+                  isDark ? "" : "hover:border-primary-300"
+                }`}
               >
-                <td className="px-6 py-4 text-sm text-gray-900">{worker.nombre}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{worker.oficio}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{worker.telefono}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {worker.tarifa ? `$${worker.tarifa.toLocaleString()}` : "-"}
-                </td>
-                <td className="px-6 py-4 text-sm space-x-2">
-                  <button
+                <CardBody className="space-y-4">
+                  {/* Header de tarjeta */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                        👤 {worker.nombre}
+                      </h3>
+                      <Badge variant="primary" icon="🔧">
+                        {worker.oficio}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Información */}
+                  <div className="space-y-2 py-4 border-t border-gray-200 dark:border-neutral-700">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+                        📞 Teléfono
+                      </span>
+                      <span className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
+                        {worker.telefono}
+                      </span>
+                    </div>
+                    {worker.tarifa && (
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+                          💰 Tarifa
+                        </span>
+                        <span className="font-semibold text-secondary-600 dark:text-secondary-400">
+                          ${worker.tarifa.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Acciones */}
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    disabled={deletingId === worker.id}
+                    loading={deletingId === worker.id}
                     onClick={() => handleDelete(worker.id)}
-                    disabled={loading}
-                    className="px-4 py-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded transition"
+                    className="w-full"
                   >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
+                    🗑️ Eliminar
+                  </Button>
+                </CardBody>
+              </Card>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-        <p className="text-sm text-gray-600">Página {page} de {totalPages}</p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            disabled={page <= 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Anterior
-          </button>
-          <button
-            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={page >= totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Siguiente
-          </button>
-        </div>
-      </div>
+          </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className={`${isDark ? "bg-neutral-800" : "bg-white"} rounded-2xl p-4 shadow-soft flex items-center justify-between`}>
+              <p className={`text-sm ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+                Página <span className="font-bold">{page}</span> de <span className="font-bold">{totalPages}</span>
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={page <= 1}
+                >
+                  ← Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={page >= totalPages}
+                >
+                  Siguiente →
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

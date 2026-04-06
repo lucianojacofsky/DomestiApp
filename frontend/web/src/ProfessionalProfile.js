@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import API_CONFIG from "./config/api.js";
+import { Card, CardHeader, CardBody } from "./components/UI/Card";
+import { Input, Textarea } from "./components/UI/Input";
+import { Button } from "./components/UI/Button";
+import { Alert } from "./components/UI/Alert";
+import { Badge } from "./components/UI/Badge";
+import { useTheme } from "./context/ThemeContext.js";
 
 function ProfessionalProfile() {
   const [profile, setProfile] = useState(null);
@@ -7,6 +13,7 @@ function ProfessionalProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const { isDark } = useTheme();
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -121,7 +128,7 @@ function ProfessionalProfile() {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError("Error: " + err.message);
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -136,173 +143,207 @@ function ProfessionalProfile() {
 
   if (loading) {
     return (
-      <div className="bg-white shadow-md rounded-lg p-8 text-center">
-        <p className="text-gray-600">Cargando perfil profesional...</p>
-      </div>
+      <Card className="w-full">
+        <CardBody className="text-center py-12">
+          <div className="animate-pulse">
+            <p className={`text-lg ${isDark ? "text-neutral-300" : "text-gray-600"}`}>
+              Cargando perfil profesional...
+            </p>
+          </div>
+        </CardBody>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Perfil Profesional</h2>
+    <Card className="w-full">
+      <CardHeader>
+        <h2 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+          🛠️ Perfil Profesional
+        </h2>
+        <p className={`text-sm mt-1 ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+          Administra tu perfil y servicios
+        </p>
+      </CardHeader>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
+      <CardBody className="space-y-6 max-w-4xl">
+        {error && <Alert type="error">{error}</Alert>}
+        {success && <Alert type="success">¡Perfil actualizado exitosamente!</Alert>}
 
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-          ✓ Perfil actualizado
-        </div>
-      )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Información Personal */}
+          <div className={`p-4 rounded-lg ${isDark ? "bg-neutral-700" : "bg-primary-50"} border border-primary-200 dark:border-primary-600`}>
+            <h3 className={`font-semibold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+              👤 Información Personal
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Nombre Completo"
+                icon="✏️"
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+                dark={isDark}
+                required
+              />
+              <Input
+                label="📞 Teléfono"
+                icon="☎️"
+                name="telefono"
+                value={formData.telefono}
+                onChange={handleChange}
+                dark={isDark}
+                required
+              />
+            </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-            <input
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <Input
+                label="🪪 DNI"
+                icon="📋"
+                name="dni"
+                value={formData.dni}
+                onChange={handleChange}
+                dark={isDark}
+              />
+              <Input
+                label="🔧 Oficio / Especialidad"
+                icon="⚙️"
+                name="oficio"
+                value={formData.oficio}
+                onChange={handleChange}
+                dark={isDark}
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
-            <input
-              name="telefono"
-              value={formData.telefono}
+          {/* Información Profesional */}
+          <div className={`p-4 rounded-lg ${isDark ? "bg-neutral-700" : "bg-primary-50"} border border-primary-200 dark:border-primary-600`}>
+            <h3 className={`font-semibold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+              💼 Información Profesional
+            </h3>
+            <Textarea
+              label="Descripción"
+              name="descripcion"
+              value={formData.descripcion}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
+              placeholder="Describe tu experiencia y servicios..."
+              dark={isDark}
+              rows="4"
             />
-          </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Oficio / Especialidad</label>
-          <input
-            name="oficio"
-            value={formData.oficio}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
-          />
-        </div>
+            <div className="mt-4">
+              <Textarea
+                label="Experiencia"
+                name="experiencia"
+                value={formData.experiencia}
+                onChange={handleChange}
+                placeholder="Cuéntanos sobre tu experiencia laboral..."
+                dark={isDark}
+                rows="3"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-          <textarea
-            name="descripcion"
-            value={formData.descripcion}
-            onChange={handleChange}
-            rows="4"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Experiencia</label>
-          <textarea
-            name="experiencia"
-            value={formData.experiencia}
-            onChange={handleChange}
-            rows="3"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tarifa por hora</label>
-            <input
-              name="tarifa"
-              type="number"
-              value={formData.tarifa}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <Input
+                label="💰 Tarifa por Hora"
+                icon="💵"
+                name="tarifa"
+                type="number"
+                value={formData.tarifa}
+                onChange={handleChange}
+                dark={isDark}
+              />
+              <Input
+                label="🕒 Disponibilidad"
+                icon="📅"
+                name="disponibilidad"
+                placeholder="Ej: Lun-Vie 9-18"
+                value={formData.disponibilidad}
+                onChange={handleChange}
+                dark={isDark}
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Alias / Cuenta para cobros</label>
-            <input
+          {/* Información de Pago */}
+          <div className={`p-4 rounded-lg ${isDark ? "bg-neutral-700" : "bg-primary-50"} border border-primary-200 dark:border-primary-600`}>
+            <h3 className={`font-semibold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+              💳 Información de Pago
+            </h3>
+            <Input
+              label="Alias / Cuenta para Cobros"
+              icon="🏦"
               name="aliasPago"
+              placeholder="Ej: mi.alias.mercadopago"
               value={formData.aliasPago}
               onChange={handleChange}
-              placeholder="Ej: Alias MercadoPago"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">DNI</label>
-            <input
-              name="dni"
-              value={formData.dni}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              dark={isDark}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Disponibilidad</label>
-            <input
-              name="disponibilidad"
-              value={formData.disponibilidad}
-              onChange={handleChange}
-              placeholder="Ej: Lun-Vie 9-18"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Fotos / Portafolio</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFiles}
-            className="w-full"
-          />
-          {formData.imagenes?.length > 0 && (
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {formData.imagenes.map((src, idx) => (
-                <div key={idx} className="relative">
-                  <img
-                    src={src}
-                    alt={`Portafolio ${idx + 1}`}
-                    className="h-24 w-full object-cover rounded"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+          {/* Portafolio */}
+          <div className={`p-4 rounded-lg ${isDark ? "bg-neutral-700" : "bg-primary-50"} border border-primary-200 dark:border-primary-600`}>
+            <h3 className={`font-semibold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+              📸 Portafolio / Galería
+            </h3>
+            <div className={`px-4 py-6 border-2 border-dashed rounded-xl text-center cursor-pointer transition-all ${
+              isDark
+                ? "border-neutral-600 hover:border-primary-500 hover:bg-neutral-600/50"
+                : "border-gray-300 hover:border-primary-500 hover:bg-primary-50"
+            }`}>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFiles}
+                className="opacity-0 w-full h-full cursor-pointer"
+              />
+              <div className={`pointer-events-none ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+                <p className="text-lg mb-1">📷 Haz clic o arrastra imágenes</p>
+                <p className="text-xs">PNG, JPG, GIF hasta 5MB</p>
+              </div>
             </div>
-          )}
-        </div>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-        >
-          {saving ? "Guardando..." : "Guardar Perfil"}
-        </button>
-      </form>
-    </div>
+            {formData.imagenes?.length > 0 && (
+              <div className="mt-4">
+                <p className={`text-sm font-semibold mb-3 ${isDark ? "text-neutral-300" : "text-gray-700"}`}>
+                  {formData.imagenes.length} imagen{formData.imagenes.length !== 1 ? "es" : ""} cargada{formData.imagenes.length !== 1 ? "s" : ""}
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {formData.imagenes.map((src, idx) => (
+                    <div key={idx} className="relative group rounded-lg overflow-hidden">
+                      <img
+                        src={src}
+                        alt={`Portafolio ${idx + 1}`}
+                        className="h-24 w-full object-cover group-hover:opacity-75 transition-opacity"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      >
+                        <span className="text-white text-2xl font-bold">✕</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            disabled={saving}
+            loading={saving}
+            className="w-full"
+          >
+            {saving ? "Guardando..." : "✓ Guardar Cambios"}
+          </Button>
+        </form>
+      </CardBody>
+    </Card>
   );
 }
 

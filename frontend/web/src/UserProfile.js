@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import API_CONFIG from "./config/api.js";
+import { Card, CardHeader, CardBody } from "./components/UI/Card";
+import { Input } from "./components/UI/Input";
+import { Button } from "./components/UI/Button";
+import { Alert } from "./components/UI/Alert";
+import { Badge } from "./components/UI/Badge";
+import { useTheme } from "./context/ThemeContext.js";
 
 function UserProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const { isDark } = useTheme();
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -94,7 +101,7 @@ function UserProfile() {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError("Error: " + err.message);
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -102,109 +109,149 @@ function UserProfile() {
 
   if (loading) {
     return (
-      <div className="bg-white shadow-md rounded-lg p-8 text-center">
-        <p className="text-gray-600">Cargando perfil...</p>
-      </div>
+      <Card className="w-full">
+        <CardBody className="text-center py-12">
+          <div className="animate-pulse">
+            <p className={`text-lg ${isDark ? "text-neutral-300" : "text-gray-600"}`}>
+              Cargando perfil...
+            </p>
+          </div>
+        </CardBody>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Mi Perfil</h2>
+    <Card className="w-full">
+      <CardHeader>
+        <h2 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+          👤 Mi Perfil
+        </h2>
+        <p className={`text-sm mt-1 ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+          Administra tu información personal
+        </p>
+      </CardHeader>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
+      <CardBody className="space-y-6 max-w-2xl">
+        {error && <Alert type="error">{error}</Alert>}
+        {success && <Alert type="success">¡Perfil actualizado exitosamente!</Alert>}
 
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-          ✓ Perfil actualizado
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-          <input
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Input
+            label="👤 Nombre Completo"
+            icon="✏️"
             name="nombre"
             value={formData.nombre}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            dark={isDark}
             required
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
-          <input
+          <Input
+            label="📍 Ubicación"
+            icon="🗺️"
             name="ubicacion"
             value={formData.ubicacion}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            dark={isDark}
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
-          <input
+          <Input
+            label="📞 Teléfono"
+            icon="☎️"
             name="telefono"
             value={formData.telefono}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            dark={isDark}
           />
-        </div>
 
-        <div>
-          <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Métodos de pago</label>
-            <button
-              type="button"
-              onClick={addMetodoPago}
-              className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-            >
-              + Agregar
-            </button>
+          {/* Métodos de pago */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className={`text-sm font-semibold ${isDark ? "text-neutral-200" : "text-gray-700"}`}>
+                💳 Métodos de Pago
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addMetodoPago}
+              >
+                + Agregar
+              </Button>
+            </div>
+
+            {(formData.metodosPago || []).length === 0 ? (
+              <p className={`text-sm ${isDark ? "text-neutral-400" : "text-gray-600"}`}>
+                No hay métodos de pago configurados
+              </p>
+            ) : (
+              (formData.metodosPago || []).map((mp, index) => (
+                <div
+                  key={index}
+                  className={`p-4 rounded-lg border-2 ${
+                    isDark ? "bg-neutral-700 border-neutral-600" : "bg-gray-50 border-gray-200"
+                  } flex gap-3 items-end`}
+                >
+                  <div className="flex-1 grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={`text-xs font-semibold ${isDark ? "text-neutral-300" : "text-gray-700"} block mb-1`}>
+                        Tipo
+                      </label>
+                      <select
+                        value={mp.tipo}
+                        onChange={(e) => handleMetodoPagoChange(index, "tipo", e.target.value)}
+                        className={`w-full px-3 py-2 border-2 rounded-lg text-sm font-medium transition-all ${
+                          isDark
+                            ? "bg-neutral-600 border-neutral-500 text-white focus:border-primary-500"
+                            : "bg-white border-gray-300 text-gray-900 focus:border-primary-500"
+                        }`}
+                      >
+                        <option value="mercadopago">💰 MercadoPago</option>
+                        <option value="transferencia">🏦 Transferencia</option>
+                        <option value="efectivo">💵 Efectivo</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`text-xs font-semibold ${isDark ? "text-neutral-300" : "text-gray-700"} block mb-1`}>
+                        Alias / Cuenta
+                      </label>
+                      <input
+                        value={mp.alias}
+                        onChange={(e) => handleMetodoPagoChange(index, "alias", e.target.value)}
+                        placeholder="Ej: mi.alias.mp"
+                        className={`w-full px-3 py-2 border-2 rounded-lg text-sm font-medium transition-all ${
+                          isDark
+                            ? "bg-neutral-600 border-neutral-500 text-white placeholder-neutral-400 focus:border-primary-500"
+                            : "bg-white border-gray-300 text-gray-900 focus:border-primary-500"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => removeMetodoPago(index)}
+                  >
+                    🗑️
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
 
-          {(formData.metodosPago || []).map((mp, index) => (
-            <div key={index} className="grid grid-cols-3 gap-2 mb-2">
-              <select
-                value={mp.tipo}
-                onChange={(e) => handleMetodoPagoChange(index, "tipo", e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="mercadopago">MercadoPago</option>
-                <option value="transferencia">Transferencia</option>
-                <option value="efectivo">Efectivo</option>
-              </select>
-              <input
-                value={mp.alias}
-                onChange={(e) => handleMetodoPagoChange(index, "alias", e.target.value)}
-                placeholder="Alias / Cuenta"
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent col-span-2"
-              />
-              <button
-                type="button"
-                onClick={() => removeMetodoPago(index)}
-                className="text-red-600 hover:text-red-800 text-sm"
-              >
-                Eliminar
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-        >
-          {saving ? "Guardando..." : "Guardar perfil"}
-        </button>
-      </form>
-    </div>
+          <Button
+            type="submit"
+            disabled={saving}
+            loading={saving}
+            className="w-full"
+          >
+            {saving ? "Guardando..." : "✓ Guardar Cambios"}
+          </Button>
+        </form>
+      </CardBody>
+    </Card>
   );
 }
 
