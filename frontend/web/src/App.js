@@ -3,6 +3,7 @@ import Login from "./Login";
 import Register from "./Register";
 import Dashboard from "./Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
+import { ThemeProvider } from "./context/ThemeContext.js";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -41,37 +42,39 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl text-gray-600">Cargando...</p>
+          <p className="text-xl text-gray-600 dark:text-gray-300">Cargando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      {!user ? (
-        <>
-          {currentPage === "login" && (
-            <Login
-              onLoginSuccess={handleLoginSuccess}
-              onSwitchToRegister={() => setCurrentPage("register")}
-            />
-          )}
-          {currentPage === "register" && (
-            <Register
-              onRegisterSuccess={handleRegisterSuccess}
-              onSwitchToLogin={() => setCurrentPage("login")}
-            />
-          )}
-        </>
-      ) : (
-        <ProtectedRoute isAuthenticated={!!user}>
-          <Dashboard user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      )}
-    </>
+    <ThemeProvider>
+      <>
+        {!user ? (
+          <>
+            {currentPage === "login" && (
+              <Login
+                onLoginSuccess={handleLoginSuccess}
+                onSwitchToRegister={() => setCurrentPage("register")}
+              />
+            )}
+            {currentPage === "register" && (
+              <Register
+                onRegisterSuccess={handleRegisterSuccess}
+                onSwitchToLogin={() => setCurrentPage("login")}
+              />
+            )}
+          </>
+        ) : (
+          <ProtectedRoute isAuthenticated={!!user}>
+            <Dashboard user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        )}
+      </>
+    </ThemeProvider>
   );
 }
 
