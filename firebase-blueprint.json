@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the platform (client, professional, or admin)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["client", "professional", "admin"] },
+        "photoURL": { "type": "string", "format": "uri" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "professionalInfo": {
+          "type": "object",
+          "properties": {
+            "bio": { "type": "string" },
+            "specialties": { "type": "array", "items": { "type": "string" } },
+            "rating": { "type": "number" }
+          }
+        }
+      },
+      "required": ["uid", "email", "name", "role"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "A service request created by a client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "professionalId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "assigned", "completed", "cancelled"] },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "title", "status", "createdAt"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "A chat room for a specific service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["serviceId", "participants", "updatedAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A single message in a chat",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chatId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chatId", "senderId", "text", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A payment transaction for a service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "clientId": { "type": "string" },
+        "professionalId": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "completed"] },
+        "provider": { "type": "string", "enum": ["mercadopago", "simulated"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["serviceId", "clientId", "amount", "status", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A review for a professional",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "clientId": { "type": "string" },
+        "professionalId": { "type": "string" },
+        "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+        "comment": { "type": "string" },
+        "clientName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["serviceId", "clientId", "professionalId", "rating", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": { "schema": "User", "description": "User profiles" },
+    "/services/{serviceId}": { "schema": "Service", "description": "Service requests" },
+    "/chats/{chatId}": { "schema": "Chat", "description": "Chat rooms" },
+    "/chats/{chatId}/messages/{messageId}": { "schema": "Message", "description": "Chat messages" },
+    "/transactions/{transactionId}": { "schema": "Transaction", "description": "Payment history" },
+    "/reviews/{reviewId}": { "schema": "Review", "description": "Professional reviews" }
+  }
+}

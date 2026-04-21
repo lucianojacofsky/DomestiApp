@@ -1,223 +1,81 @@
-# DomestiApp
+# DomestiApp 🏠
 
-Marketplace de servicios domésticos con roles (`cliente`, `profesional`, `admin`), chat en tiempo real y flujo de pagos con MercadoPago (modo real o simulado).
+DomestiApp es una plataforma integral diseñada para conectar a clientes que necesitan servicios domésticos con profesionales calificados. La aplicación gestiona todo el ciclo de vida del servicio, desde la solicitud inicial hasta el pago final y la reseña del profesional.
 
-## Stack
+## 🚀 Características Principales
 
-- Backend: Node.js, Express, LowDB, JWT, Socket.IO, Joi
-- Frontend: React
-- Pagos: MercadoPago (si hay token), fallback simulado (si no hay token)
-- Almacenamiento de imágenes: carpeta local `backend/uploads`
+- **Gestión de Perfiles**: Tres roles especializados (Cliente, Profesional y Administrador).
+- **Solicitudes de Trabajo**: Los clientes pueden crear pedidos detallados con descripción, fotos y ubicación.
+- **Chat en Tiempo Real**: Comunicación directa entre cliente y profesional asignado mediante Firebase.
+- **Sistema de Pagos**: Integración con MercadoPago para transacciones seguras.
+- **Reseñas y Calificaciones**: Sistema de feedback para garantizar la calidad del servicio.
+- **Panel de Control**: Dashboards personalizados según el rol del usuario.
+- **Diseño Premium**: Interfaz moderna construida con Tailwind CSS y componentes de shadcn/ui.
 
-## Estructura
+## 🛠️ Tecnologías
 
-- `backend`: API, sockets, lógica de negocio
-- `frontend/web`: aplicación React
+- **Frontend**: React 19, Vite, Tailwind CSS v4, Motion.
+- **Varios**: shadcn/ui, Lucide React, Sonner.
+- **Backend/Base de Datos**: Firebase (Auth, Firestore, Hosting).
+- **Integraciones**: SDK de MercadoPago, Google Gemini AI.
 
-## Funcionalidades implementadas
+## 💻 Instalación Local
 
-- Auth completa (`register/login`) con JWT.
-- Roles y autorización por ruta.
-- Perfil de usuario cliente (`GET/PUT /users/profile`).
-- Perfil profesional/worker (`GET /workers/me`, `POST/PUT /workers`).
-- Solicitudes de servicio (crear/listar/aceptar/completar/cancelar).
-- Chat en tiempo real por servicio (solo cuando está asignado).
-- Transacciones y comisiones.
-- Panel admin para gestionar usuarios, workers, solicitudes y payouts.
-- Subida de imágenes a storage local + URLs públicas.
-- Filtros y paginación en listados principales.
+Sigue estos pasos para correr DomestiApp en tu computadora:
 
----
+### Pre-requisitos
+- Node.js (v18 o superior)
+- Una cuenta de Firebase
 
-## Requisitos
+### Pasos
+1. **Clonar el repositorio**:
+   ```bash
+   git clone <url-del-repositorio>
+   cd domestiapp
+   ```
 
-- Node.js 18+ (recomendado)
-- npm
+2. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
 
-## Variables de entorno
+3. **Configurar variables de entorno**:
+   Crea un archivo `.env` en la raíz basado en `.env.example`:
+   ```env
+   GEMINI_API_KEY="tu_clave_de_gemini"
+   MERCADOPAGO_ACCESS_TOKEN="tu_token_de_mercadopago"
+   ```
 
-Crear `backend/.env` (opcional, pero recomendado):
+4. **Configurar Firebase**:
+   - Crea un proyecto en la consola de Firebase.
+   - Habilita **Authentication** (Google Login).
+   - Crea una base de datos **Firestore**.
+   - Descarga la configuración de tu app web y crea un archivo llamado `src/lib/firebase-config.json` (o actualiza los valores en el código).
 
-```env
-PORT=5000
-JWT_SECRET=claveSuperSecreta
-FRONTEND_URL=http://localhost:3000
-BACKEND_URL=http://localhost:5000
-MP_ACCESS_TOKEN=
-```
+5. **Correr la aplicación**:
+   ```bash
+   npm run dev
+   ```
+   La aplicación estará disponible en `http://localhost:3000`.
 
-Notas:
-- Si `MP_ACCESS_TOKEN` está vacío: pagos en modo simulado (aprobación automática).
-- Si `MP_ACCESS_TOKEN` está configurado: se crea checkout real de MercadoPago.
+## 👥 Usuarios de Prueba (Credenciales de Ejemplo)
 
----
+Para probar todas las funcionalidades, puedes utilizar o registrar estos perfiles:
 
-## Cómo correr el proyecto
+### 1. Administrador (Admin)
+- **Email**: `admin@ejemplo.com`
+- **Contraseña**: `admin123456`
+- **Rol**: Acceso total al panel de control, supervisión de usuarios y transacciones.
 
-### 1) Instalar dependencias
+### 2. Profesional
+- **Email**: `profesional@ejemplo.com`
+- **Contraseña**: `pro123456`
+- **Funciones**: Aceptar trabajos, gestionar estados, chatear y recibir pagos.
 
-Desde la raíz:
-
-```bash
-npm install
-```
-
-También podés instalar por separado:
-
-```bash
-cd backend && npm install
-cd ../frontend/web && npm install
-```
-
-### 2) Levantar backend
-
-En una terminal:
-
-```bash
-cd backend
-npm run dev
-```
-
-Servidor API en: `http://localhost:5000`
-
-### 3) Levantar frontend
-
-En otra terminal:
-
-```bash
-cd frontend/web
-npm start
-```
-
-Web en: `http://localhost:3000`
-
-### 4) Build de verificación (opcional)
-
-```bash
-cd frontend/web
-npm run build
-```
+### 3. Cliente
+- **Email**: `cliente@ejemplo.com`
+- **Contraseña**: `cliente123456`
+- **Funciones**: Crear solicitudes, pagar servicios, chatear y calificar profesionales.
 
 ---
-
-## Seed (datos de prueba)
-
-Este seed carga usuarios (cliente/profesional/admin), el worker del profesional, requests de servicios (pendiente/aceptado/completado) y mensajes/transacciones para que puedas probar todo de una.
-
-1. En una terminal:
-
-```bash
-cd backend
-npm run seed
-```
-
-Esto sobrescribe `backend/db.json`.
-
-Credenciales para iniciar sesión:
-
-- Cliente demo: `cliente@test.com` / `12345678`
-- Profesional demo: `profesional@test.com` / `12345678`
-- Admin demo: `admin@test.com` / `admin123`
-
----
-
-## Qué páginas/pantallas vas a poder ver
-
-La app no usa rutas tipo `/login` en URL; se maneja en una sola SPA con vistas internas.
-
-### Público (sin sesión)
-
-- Pantalla de Login
-- Pantalla de Registro
-
-### Cliente (al iniciar sesión)
-
-Tabs en Dashboard:
-- `Solicitudes de Servicios` (lista, filtros, paginación)
-- `Solicitar Servicio` (crear solicitud con fotos)
-- `Transacciones` (historial de pagos)
-- `Perfil` (editar nombre, ubicación, teléfono, métodos de pago)
-
-Acciones relevantes:
-- Aceptar/completar/cancelar flujo según estado
-- Pagar servicio completado
-- Abrir chat con profesional asignado
-
-### Profesional (al iniciar sesión)
-
-Tabs en Dashboard:
-- `Solicitudes de Servicios` (pendientes + asignadas)
-- `Transacciones`
-- `Perfil` (ficha profesional)
-- `Mi Perfil` (gestión de workers/listado)
-
-Acciones relevantes:
-- Aceptar trabajo
-- Chatear con cliente cuando el servicio esté asignado
-
-### Admin (al iniciar sesión)
-
-Tabs en Dashboard:
-- `Administración`
-  - Gestión de usuarios y roles
-  - Gestión de solicitudes y estado
-  - Vista de profesionales
-  - Reporte de payouts/comisiones
-
----
-
-## Endpoints principales
-
-- Auth/usuarios:
-  - `POST /users/register`
-  - `POST /users/login`
-  - `GET /users/profile`
-  - `PUT /users/profile`
-- Workers:
-  - `GET /workers`
-  - `GET /workers/me`
-  - `POST /workers`
-  - `PUT /workers/:id`
-- Servicios:
-  - `GET /services`
-  - `POST /services`
-  - `POST /services/:id/accept`
-  - `POST /services/:id/complete`
-  - `POST /services/:id/cancel`
-- Chat:
-  - `GET /chat/service/:serviceId`
-  - `POST /chat/send`
-  - Socket.IO room por servicio
-- Pagos:
-  - `POST /payments/pay-service`
-  - `GET /payments/transactions/:userId`
-  - `POST /payments/webhook`
-- Admin:
-  - `GET /admin/users`
-  - `PUT /admin/users/role`
-  - `GET /admin/workers`
-  - `GET /admin/services`
-  - `PUT /admin/services/status`
-  - `GET /admin/payouts`
-
----
-
-## Flujo de pruebas recomendado
-
-1. Registrar un `cliente` y un `profesional`.
-2. Cliente crea una solicitud.
-3. Profesional acepta la solicitud.
-4. Cliente marca como completado.
-5. Cliente paga:
-   - con token MP: redirige a checkout real
-   - sin token MP: se aprueba automáticamente en simulado
-6. Revisar transacciones y payouts en admin.
-7. Probar chat en servicio asignado.
-
----
-
-## Notas
-
-- El almacenamiento de imágenes es local (no S3/CDN).
-- Base de datos actual: `LowDB` (`backend/db.json`).
-- Proyecto listo para demo funcional end-to-end en local.
+Desarrollado con ❤️ para DomestiApp.

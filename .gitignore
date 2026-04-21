@@ -1,17 +1,1 @@
-# Node modules
-node_modules/
-
-# Build outputs
-/frontend/web/build
-/frontend/mobile/android/app/build
-/frontend/mobile/ios/build
-
-# Environment variables
-.env
-.env.local
-
-# Runtime uploads
-backend/uploads/
-
-#Ignore vscode AI rules
-.github/instructions/codacy.instructions.md
+c:\Users\lucia\Downloads\domestiapp\package-lock.json c:\Users\lucia\Downloads\domestiapp\README.md c:\Users\lucia\Downloads\domestiapp\tsconfig.json c:\Users\lucia\Downloads\domestiapp\vite.config.ts c:\Users\lucia\Downloads\domestiapp\.env.example c:\Users\lucia\Downloads\domestiapp\.gitignore c:\Users\lucia\Downloads\domestiapp\components.json c:\Users\lucia\Downloads\domestiapp\firebase-applet-config.json c:\Users\lucia\Downloads\domestiapp\firebase-blueprint.json c:\Users\lucia\Downloads\domestiapp\firestore.rules c:\Users\lucia\Downloads\domestiapp\index.html c:\Users\lucia\Downloads\domestiapp\metadata.json c:\Users\lucia\Downloads\domestiapp\package.json c:\Users\lucia\Downloads\domestiapp\server.ts c:\Users\lucia\Downloads\domestiapp\.git c:\Users\lucia\Downloads\domestiapp\src
